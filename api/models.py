@@ -3,11 +3,6 @@ from django.db import models
 from django.utils import timezone
 
 
-class ScoreTransactionManager(models.Manager):
-    def score_sum(self):
-        return self.query
-
-
 class ScoreTransaction(models.Model):
     ACTIVITIES = [
         ('like', 'like'),
@@ -20,8 +15,6 @@ class ScoreTransaction(models.Model):
     score = models.IntegerField()
     created = models.DateTimeField(default=timezone.now)
     updated = models.DateTimeField(default=timezone.now)
-
-    objects = ScoreTransactionManager()
 
 
 class GroupSettings(models.Model):
