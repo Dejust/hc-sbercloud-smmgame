@@ -1,11 +1,9 @@
-from django.db.models import Sum
 
 from rest_framework import generics
-from rest_framework.filters import SearchFilter
-
 from rest_framework.response import Response
 
 from . import models
+from . import permissions
 from . import serializers
 from . import services
 
@@ -13,6 +11,7 @@ from . import services
 class HistoryApiView(generics.ListAPIView):
     queryset = models.ScoreTransaction.objects.all()
     serializer_class = serializers.UserScopeTransactionSerializer
+    permission_classes = [permissions.VkPermission]
 
     def get_queryset(self):
         if self.request.query_params.get('vk_user_id'):
@@ -37,6 +36,7 @@ class HistoryApiView(generics.ListAPIView):
 
 class ScoreApiView(generics.ListAPIView):
     queryset = models.ScoreTransaction.objects.all()
+    permission_classes = [permissions.VkPermission]
 
     def get_queryset(self):
         if self.request.query_params.get('vk_user_id'):
@@ -50,12 +50,16 @@ class ScoreApiView(generics.ListAPIView):
 
 class RatesApiView(generics.ListAPIView):
     queryset = models.ScoreTransaction.objects.all()
+    permission_classes = [permissions.VkPermission]
 
     def get(self, request, *args, **kwargs):
-        # rates and user
         data = services.aggregate_all_user_rates(self.get_queryset())
         return Response({'verify': True, 'data': data})
 
 
 class SettingsApiView(generics.RetrieveUpdateAPIView):
     queryset = models.GroupSettings.objects.all()
+    lookup_field = 'group_id'
+
+    def get(self, request, *args, **kwargs):
+        return super(SettingsApiView, self).get(request, *args, **kwargs)

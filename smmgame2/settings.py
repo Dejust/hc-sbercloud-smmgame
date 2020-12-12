@@ -131,3 +131,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+VK_API_TOKEN = os.environ.get('VK_API_TOKEN', default=None)
