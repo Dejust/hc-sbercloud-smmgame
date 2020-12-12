@@ -1,0 +1,43 @@
+version: '3'
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgres:10
+    env_file:
+      - compose/postgres.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - /tmp/pg:/tmp/pg
+    ports:
+      - 5432:5432/tcp
+
+  api:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./compose/Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - compose/postgres.env
+    ports:
+      - 8000:8000/tcp
+    depends_on:
+      - postgres
+      - migration
+    volumes:
+      - .:/code
+
+  migration:
+    build:
+      context: .
+      dockerfile: ./compose/Dockerfile
+    command: python manage.py migrate --no-input
+    env_file:
+      - compose/postgres.env
+    depends_on:
+      - postgres
+    volumes:
+      - .:/code
+
+volumes:
+  pg_data:
