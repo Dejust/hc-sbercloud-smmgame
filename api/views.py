@@ -19,7 +19,7 @@ def _bind_user_details(data):
 
 
 class BaseHistoryApiView(generics.ListAPIView):
-    queryset = models.ScoreTransaction.objects.all()
+    queryset = models.ScoreTransaction.objects.order_by('-created')
     serializer_class = serializers.UserScopeTransactionSerializer
     permission_classes = [permissions.VkPermission]
     lookup_param, lookup_model = None, None
@@ -95,5 +95,3 @@ class AchievementsApiView(generics.ListAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         data = services.get_achievements(queryset)
         return Response(data)
-
-
