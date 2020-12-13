@@ -60,7 +60,7 @@ class RatesApiView(generics.ListAPIView):
 
 class SettingsApiView(generics.RetrieveAPIView, generics.CreateAPIView):
     queryset = models.GroupSettings.objects.all()
-    permission_classes = [permissions.VkPermission]
+    permission_classes = [permissions.VkPermission, permissions.VKIsAdmin]
     serializer_class = serializers.GroupSettingsSerializer
     lookup_field = 'group_id'
 
