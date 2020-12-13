@@ -39,9 +39,10 @@ class ScoreApiView(generics.ListAPIView):
     permission_classes = [permissions.VkPermission]
 
     def get_queryset(self):
-        if self.request.query_params.get('user_id'):
-            return self.queryset.filter(user_id=self.request.query_params['user_id'])
-        return self.queryset
+        user_id = self.request.query_params.get('user_id') or self.request.query_params.get('vk_user_id')
+        if user_id:
+            return self.queryset.filter(user_id=user_id)
+        return self.queryset.none()
 
     def list(self, request, *args, **kwargs):
         data = services.aggregate_user_rate(self.get_queryset())
@@ -64,5 +65,24 @@ class SettingsApiView(generics.RetrieveAPIView, generics.CreateAPIView):
     lookup_field = 'group_id'
 
     def get_object(self):
-        self.kwargs['group_id'] = self.request.query_params.get('group_id')
+        group_id = self.request.query_params.get('group_id') or self.request.query_params.get('vk_group_id')
+        self.kwargs['group_id'] = group_id
         return super(SettingsApiView, self).get_object()
+
+
+class AchievementsApiView(generics.ListAPIView):
+    queryset = models.ScoreTransaction.objects.all()
+    permission_classes = [permissions.VkPermission]
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id') or self.request.query_params.get('vk_user_id')
+        if user_id:
+            return self.queryset.filter(user_id=user_id)
+        self.queryset.none()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        data = services.get_achievements(queryset)
+        return Response(data)
+
+
