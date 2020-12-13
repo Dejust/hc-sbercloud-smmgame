@@ -16,7 +16,7 @@ class VkPermission(BasePermission):
         vk_subset = dict(sorted(x for x in query.items() if x[0][:3] == "vk_"))
         hash_code = b64encode(HMAC(self.secret.encode(), urlencode(vk_subset, doseq=True).encode(), sha256).digest())
         decoded_hash_code = hash_code.decode('utf-8')[:-1].replace('+', '-').replace('/', '_')
-        return query["sign"] == decoded_hash_code
+        return query.get("sign") == decoded_hash_code
 
 
 class VKIsAdmin(BasePermission):

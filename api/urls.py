@@ -5,7 +5,8 @@ from . import views
 
 
 urlpatterns = [
-    path('history', views.HistoryApiView.as_view()),
+    path('history/user', views.UserHistoryApiView.as_view()),
+    path('history/group', views.GroupHistoryApiView.as_view()),
     path('score', views.ScoreApiView.as_view()),
     path('rates', views.RatesApiView.as_view()),
     path('settings', views.SettingsApiView.as_view()),

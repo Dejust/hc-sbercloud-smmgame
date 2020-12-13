@@ -8,30 +8,31 @@ from . import serializers
 from . import services
 
 
-class HistoryApiView(generics.ListAPIView):
+class BaseHistoryApiView(generics.ListAPIView):
     queryset = models.ScoreTransaction.objects.all()
     serializer_class = serializers.UserScopeTransactionSerializer
     permission_classes = [permissions.VkPermission]
+    lookup_param, lookup_model = None, None
 
     def get_queryset(self):
-        if self.request.query_params.get('user_id'):
-            return self.queryset.filter(user_id=self.request.query_params['user_id'])
-
-        elif self.request.query_params.get('vk_group_id'):
-            return self.queryset.filter(group_id=self.request.query_params['vk_group_id'])
+        value = self.request.query_params.get(self.lookup_param)
+        if value:
+            return self.queryset.filter(**{self.lookup_model: value})
 
         return self.queryset.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class UserHistoryApiView(BaseHistoryApiView):
+    lookup_param, lookup_model = 'vk_user_id', 'user_id'
+
+
+class GroupHistoryApiView(BaseHistoryApiView):
+    lookup_param, lookup_model = 'vk_group_id', 'group_id'
 
 
 class ScoreApiView(generics.ListAPIView):
@@ -65,8 +66,7 @@ class SettingsApiView(generics.RetrieveAPIView, generics.CreateAPIView):
     lookup_field = 'group_id'
 
     def get_object(self):
-        group_id = self.request.query_params.get('group_id') or self.request.query_params.get('vk_group_id')
-        self.kwargs['group_id'] = group_id
+        self.kwargs['group_id'] = self.request.query_params.get('vk_group_id')
         return super(SettingsApiView, self).get_object()
 
 
@@ -75,10 +75,10 @@ class AchievementsApiView(generics.ListAPIView):
     permission_classes = [permissions.VkPermission]
 
     def get_queryset(self):
-        user_id = self.request.query_params.get('user_id') or self.request.query_params.get('vk_user_id')
+        user_id = self.request.query_params.get('vk_user_id')
         if user_id:
             return self.queryset.filter(user_id=user_id)
-        self.queryset.none()
+        return self.queryset.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
