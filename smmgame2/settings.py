@@ -133,3 +133,4 @@ REST_FRAMEWORK = {
 }
 
 VK_API_TOKEN = os.environ.get('VK_API_TOKEN', default=None)
+VK_SERVICE_TOKEN = os.environ.get('VK_SERVICE_TOKEN', default=None)
