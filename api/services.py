@@ -1,8 +1,8 @@
-from django.db.models import Sum
+from django.db.models import Sum, functions
 
 
 def aggregate_user_rate(queryset):
-    return queryset.aggregate(score=Sum('score'))
+    return queryset.aggregate(score=functions.Coalesce(Sum('score'), 0))
 
 
 def aggregate_all_user_rates(queryset):

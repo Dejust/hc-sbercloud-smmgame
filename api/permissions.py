@@ -17,3 +17,9 @@ class VkPermission(BasePermission):
         hash_code = b64encode(HMAC(self.secret.encode(), urlencode(vk_subset, doseq=True).encode(), sha256).digest())
         decoded_hash_code = hash_code.decode('utf-8')[:-1].replace('+', '-').replace('/', '_')
         return query["sign"] == decoded_hash_code
+
+
+class VKIsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        role = request.query_params.get('vk_viewer_group_role')
+        return bool(role and role in ('admin',))

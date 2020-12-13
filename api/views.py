@@ -14,13 +14,13 @@ class HistoryApiView(generics.ListAPIView):
     permission_classes = [permissions.VkPermission]
 
     def get_queryset(self):
-        if self.request.query_params.get('vk_user_id'):
-            return self.queryset.filter(user_id=self.request.query_params['vk_user_id'])
+        if self.request.query_params.get('user_id'):
+            return self.queryset.filter(user_id=self.request.query_params['user_id'])
 
         elif self.request.query_params.get('vk_group_id'):
             return self.queryset.filter(group_id=self.request.query_params['vk_group_id'])
 
-        return self.queryset.all()
+        return self.queryset.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -31,7 +31,7 @@ class HistoryApiView(generics.ListAPIView):
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response({'verify': True, 'data': serializer.data})
+        return Response(serializer.data)
 
 
 class ScoreApiView(generics.ListAPIView):
@@ -39,13 +39,13 @@ class ScoreApiView(generics.ListAPIView):
     permission_classes = [permissions.VkPermission]
 
     def get_queryset(self):
-        if self.request.query_params.get('vk_user_id'):
-            return self.queryset.filter(user_id=self.request.query_params['vk_user_id'])
+        if self.request.query_params.get('user_id'):
+            return self.queryset.filter(user_id=self.request.query_params['user_id'])
         return self.queryset
 
     def list(self, request, *args, **kwargs):
         data = services.aggregate_user_rate(self.get_queryset())
-        return Response({'verify': True, 'data': data})
+        return Response(data)
 
 
 class RatesApiView(generics.ListAPIView):
@@ -54,12 +54,15 @@ class RatesApiView(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         data = services.aggregate_all_user_rates(self.get_queryset())
-        return Response({'verify': True, 'data': data})
+        return Response(data)
 
 
-class SettingsApiView(generics.RetrieveUpdateAPIView):
+class SettingsApiView(generics.RetrieveAPIView, generics.CreateAPIView):
     queryset = models.GroupSettings.objects.all()
+    permission_classes = [permissions.VkPermission]
+    serializer_class = serializers.GroupSettingsSerializer
     lookup_field = 'group_id'
 
-    def get(self, request, *args, **kwargs):
-        return super(SettingsApiView, self).get(request, *args, **kwargs)
+    def get_object(self):
+        self.kwargs['group_id'] = self.request.query_params.get('group_id')
+        return super(SettingsApiView, self).get_object()
